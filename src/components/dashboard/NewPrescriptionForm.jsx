@@ -21,11 +21,11 @@ const NewPrescriptionForm = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      // Add the appointment with a "pending" status
+      
       const appointmentData = {
         ...formData,
-        status: "pending",  // Initial status
-        doctorResponse: null,  // Doctor hasn't responded yet
+        status: "pending",  
+        doctorResponse: null,  
         requestedDateTime: new Date(`${formData.date}T${formData.time}`).toISOString(),
       };
       await addDoc(collection(db, "appointments"), appointmentData);

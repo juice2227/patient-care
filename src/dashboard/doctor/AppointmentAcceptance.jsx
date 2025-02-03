@@ -46,7 +46,7 @@ const AppointmentAcceptance = () => {
             : item
         )
       );
-      setResponseData({ dateTime: "", message: "" }); // Reset response form
+      setResponseData({ dateTime: "", message: "" }); 
       setEditingId(null);
     } catch (error) {
       console.error("Error responding to appointment:", error);

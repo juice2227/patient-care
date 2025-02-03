@@ -6,9 +6,8 @@ import { db } from "../../firebase/Firebase";
 const AppointmentMessages = () => {
   const [appointments, setAppointments] = useState([]);
   const [selectedMessage, setSelectedMessage] = useState(null);
-  const [selectedMessages, setSelectedMessages] = useState([]); // Track selected messages
+  const [selectedMessages, setSelectedMessages] = useState([]); 
 
-  // Fetch confirmed appointments
   useEffect(() => {
     const fetchConfirmedAppointments = () => {
       const q = query(collection(db, "appointments"), where("status", "==", "confirmed"));
@@ -27,18 +26,18 @@ const AppointmentMessages = () => {
     fetchConfirmedAppointments();
   }, []);
 
-  // Check All: Select all messages
+  
   const handleCheckAll = () => {
     const allIds = appointments.map((appointment) => appointment.id);
     setSelectedMessages(allIds);
   };
 
-  // Clear All: Deselect all messages
+
   const handleClearAll = () => {
     setSelectedMessages([]);
   };
 
-  // Delete All: Remove selected messages from Firestore
+  
   const handleDeleteAll = async () => {
     try {
       await Promise.all(
@@ -52,9 +51,9 @@ const AppointmentMessages = () => {
     }
   };
 
-  // Refresh: Refetch messages (useful if Firebase doesn’t auto-update)
+  
   const handleRefresh = () => {
-    window.location.reload(); // Simple way to refresh, or trigger re-fetch logic
+    window.location.reload(); 
   };
 
   return (
@@ -62,7 +61,7 @@ const AppointmentMessages = () => {
       <h2 className="text-lg font-bold">Inbox</h2>
       <div className="flex">
         
-        {/* LEFT: Message List */}
+        
         <div className="w-2/3 bg-white shadow-md rounded-lg p-4">
           <div className="flex justify-between mb-4">
             <button onClick={handleDeleteAll} className="bg-red-500 text-white px-3 py-1 rounded">Delete All</button>
@@ -88,7 +87,7 @@ const AppointmentMessages = () => {
                   className="cursor-pointer hover:bg-gray-100"
                   onClick={() => setSelectedMessage(appointment)}
                 >
-                  {/* Checkbox for selecting messages */}
+                  
                   <td className="border p-2 text-center">
                     <input
                       type="checkbox"
@@ -112,7 +111,7 @@ const AppointmentMessages = () => {
           </table>
         </div>
 
-        {/* RIGHT: Message Preview */}
+        
         <div className="w-1/3 bg-white shadow-md rounded-lg p-4 ml-4">
           {selectedMessage ? (
             <div>

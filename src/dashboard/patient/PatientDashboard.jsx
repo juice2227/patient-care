@@ -22,7 +22,7 @@ const PatientDashboard = () => {
           <Route index element={<h2>Welcome to your dashboard</h2>} />
         </Routes>
 
-        {/* Renders nested routes */}
+        
         <Outlet />
       </div>
     </div>

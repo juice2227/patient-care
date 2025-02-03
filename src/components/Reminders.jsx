@@ -6,7 +6,7 @@ const Reminder = ({ appointments = [] }) => {
   const [reminders, setReminders] = useState([]);
 
   useEffect(() => {
-    // Fetch upcoming appointments and set reminders
+    
     const upcomingAppointments = appointments.filter(
       (app) => new Date(app.date) > new Date()
     );

@@ -1,7 +1,7 @@
 import { collection, getDocs, addDoc, doc, deleteDoc, updateDoc } from "firebase/firestore";
-import { db } from "./firebase"; // Import your initialized Firestore instance
+import { db } from "./firebase";
 
-// Fetch all prescriptions
+
 export const fetchPrescriptions = async () => {
   try {
     const querySnapshot = await getDocs(collection(db, "prescriptions"));
@@ -15,17 +15,17 @@ export const fetchPrescriptions = async () => {
   }
 };
 
-// Add a new prescription
+
 export const addPrescription = async (data) => {
   try {
     const docRef = await addDoc(collection(db, "prescriptions"), data);
-    return docRef.id; // Return the ID of the new document
+    return docRef.id; 
   } catch (error) {
     console.error("Error adding prescription:", error);
   }
 };
 
-// Update a prescription
+
 export const updatePrescription = async (id, updatedData) => {
   try {
     const prescriptionRef = doc(db, "prescriptions", id);
@@ -36,11 +36,11 @@ export const updatePrescription = async (id, updatedData) => {
   }
 };
 
-// Delete a prescription
+
 export const deletePrescription = async (id) => {
     try {
-      const prescriptionRef = doc(db, "prescriptions", id); // Reference the document by its ID
-      await deleteDoc(prescriptionRef); // Delete the document
+      const prescriptionRef = doc(db, "prescriptions", id); 
+      await deleteDoc(prescriptionRef); 
       console.log("Prescription deleted successfully!");
     } catch (error) {
       console.error("Error deleting prescription:", error);

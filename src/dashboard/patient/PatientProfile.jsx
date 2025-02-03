@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { auth, db } from "../../firebase/Firebase"; // Adjust the path as needed
+import { auth, db } from "../../firebase/Firebase"; 
 import { doc, getDoc } from "firebase/firestore";
 
 export default function Profile() {

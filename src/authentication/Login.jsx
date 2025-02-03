@@ -16,17 +16,17 @@ const Login = () => {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
 
-      // Fetch user role from Firestore
+      
       const docRef = doc(db, "users", user.uid);
       const docSnap = await getDoc(docRef);
 
       if (docSnap.exists()) {
         const userRole = docSnap.data().role;
 
-        // Redirect based on user role
+  
         navigate(userRole === "doctor" ? "/doctor-dashboard" : "/patient-dashboard");
 
-        // Clear the form fields after successful login
+        
         setEmail("");
         setPassword("");
       } else {
@@ -34,7 +34,7 @@ const Login = () => {
       }
     } catch (error) {
       setError("Invalid email or password");
-      // Optionally reset the form after failed login
+      
       setEmail("");
       setPassword("");
     }

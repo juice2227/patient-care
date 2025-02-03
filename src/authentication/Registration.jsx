@@ -17,7 +17,7 @@ const Registeration = () => {
   const [error, setError] = useState("");
   const [showPassword, setShowPassword] = useState(false); // Toggle state for password visibility
 
-  // Clear form data when component mounts (re-renders)
+  
   useEffect(() => {
     setFormData({
       firstName: "",
@@ -27,7 +27,7 @@ const Registeration = () => {
       password: "",
       role: "patient",
     });
-  }, []); // Empty dependency array means this will run only once, after the component is mounted
+  }, []); 
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -37,7 +37,7 @@ const Registeration = () => {
     e.preventDefault();
     const { email, password, role } = formData;
 
-    // Password validation regex
+    
     const passwordRegex = /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
 
     if (!passwordRegex.test(password)) {
@@ -48,11 +48,11 @@ const Registeration = () => {
     }
 
     try {
-      // Create user with email and password
+  
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
 
-      // Save user data and role in Firestore
+      
       await setDoc(doc(db, "users", user.uid), {
         firstName: formData.firstName,
         lastName: formData.lastName,
@@ -63,7 +63,7 @@ const Registeration = () => {
 
       console.log("User registered:", formData);
       
-      // Clear form data before redirect
+      
       setFormData({
         firstName: "",
         lastName: "",
@@ -73,8 +73,8 @@ const Registeration = () => {
         role: "patient",
       });
 
-      // Redirect to login after successful registration
-      window.location.href = "/login";  // You can replace this with React Router's navigation if you use it
+
+      window.location.href = "/login";  
     } catch (error) {
       setError(error.message);
     }
@@ -87,23 +87,23 @@ const Registeration = () => {
       const result = await signInWithPopup(auth, provider);
       const user = result.user;
       
-      // Check if user exists in Firestore and set role if needed
+    
       const userRef = doc(db, "users", user.uid);
       const userDoc = await getDoc(userRef);
       
       if (!userDoc.exists()) {
-        // Assign default role if user does not exist in Firestore
+        
         await setDoc(userRef, {
           firstName: user.displayName.split(" ")[0],
           lastName: user.displayName.split(" ")[1] || "",
           email: user.email,
-          role: "patient",  // You can set a default role here (e.g., patient or doctor)
+          role: "patient",
         });
       }
 
       console.log("User signed in with Google:", user);
-      // Redirect or handle the user as needed
-      window.location.href = "/dashboard"; // For example
+  
+      window.location.href = "/dashboard"; 
 
     } catch (error) {
       setError(error.message);
@@ -111,7 +111,7 @@ const Registeration = () => {
   };
 
   const togglePasswordVisibility = () => {
-    setShowPassword(!showPassword); // Toggle password visibility
+    setShowPassword(!showPassword); 
   };
 
   return (

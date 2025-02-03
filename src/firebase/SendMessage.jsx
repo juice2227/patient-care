@@ -1,8 +1,8 @@
-// src/firebase/Messaging.js
+
 import { collection, addDoc, serverTimestamp ,onSnapshot} from "firebase/firestore";
 import { db } from "./Firebase";
 
-// Send a message and store it in a subcollection
+
 export const sendMessage = async (conversationId, senderId, message) => {
   if (!conversationId) {
     console.error("Missing conversationId. Cannot send message.");

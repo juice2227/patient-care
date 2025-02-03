@@ -10,8 +10,8 @@ import { onAuthStateChanged } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
 
 import SplashScreen from "./components/SplashScreen";
-import Login from "./components/Login";
-import Register from "./components/Registration";
+import Login from "./authentication/Login";
+import Register from "./authentication/Registration";
 
 import DoctorDashboard from "./dashboard/doctor/DoctorDashboard";
 

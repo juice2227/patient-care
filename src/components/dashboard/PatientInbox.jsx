@@ -5,10 +5,9 @@ import { db } from "../../firebase/Firebase";
 const PatientInbox = () => {
   const [appointments, setAppointments] = useState([]);
   const [selectedMessage, setSelectedMessage] = useState(null);
-  const [selectedMessages, setSelectedMessages] = useState([]); // Track selected messages
+  const [selectedMessages, setSelectedMessages] = useState([]); 
 
-  // Fetch confirmed appointments
-  useEffect(() => {
+   useEffect(() => {
     const fetchConfirmedAppointments = () => {
       const q = query(collection(db, "appointments"), where("status", "==", "confirmed"));
       
@@ -26,18 +25,18 @@ const PatientInbox = () => {
     fetchConfirmedAppointments();
   }, []);
 
-  // Check All: Select all messages
+  
   const handleCheckAll = () => {
     const allIds = appointments.map((appointment) => appointment.id);
     setSelectedMessages(allIds);
   };
 
-  // Clear All: Deselect all messages
+  
   const handleClearAll = () => {
     setSelectedMessages([]);
   };
 
-  // Delete All: Remove selected messages from Firestore
+  
   const handleDeleteAll = async () => {
     try {
       await Promise.all(
@@ -51,9 +50,9 @@ const PatientInbox = () => {
     }
   };
 
-  // Refresh: Refetch messages (useful if Firebase doesn’t auto-update)
+ 
   const handleRefresh = () => {
-    window.location.reload(); // Simple way to refresh, or trigger re-fetch logic
+    window.location.reload(); 
   };
 
   return (
@@ -87,7 +86,7 @@ const PatientInbox = () => {
                   className="cursor-pointer hover:bg-gray-100"
                   onClick={() => setSelectedMessage(appointment)}
                 >
-                  {/* Checkbox for selecting messages */}
+                  
                   <td className="border p-2 text-center">
                     <input
                       type="checkbox"
@@ -111,7 +110,7 @@ const PatientInbox = () => {
           </table>
         </div>
 
-        {/* RIGHT: Message Preview */}
+        
         <div className="w-1/3 bg-white shadow-md rounded-lg p-4 ml-4">
           {selectedMessage ? (
             <div>

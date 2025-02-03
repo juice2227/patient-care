@@ -51,13 +51,13 @@ export const sendMessage = async (conversationId, message) => {
 
   if (!message || typeof message !== "object") {
     console.error("sendMessage: Invalid message object provided.");
-    return; // Do nothing if the message object is invalid
+    return; 
   }
 
   try {
     const conversationRef = doc(db, "conversations", conversationId);
     await updateDoc(conversationRef, {
-      messages: arrayUnion(message), // Append the new message to the messages array
+      messages: arrayUnion(message), 
     });
   } catch (error) {
     console.error("Error sending message:", error);

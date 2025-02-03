@@ -1,23 +1,23 @@
 import React, { useEffect, useState } from "react";
 import { fetchPrescriptions, updatePrescription, deletePrescription } from "../firebase/PrescriptionFunction";
 import { collection, onSnapshot } from "firebase/firestore";
-import { db } from "../firebase/Firebase"; // Ensure the correct Firebase reference
+import { db } from "../firebase/Firebase"; 
 
 const AppointmentPage = () => {
   const [prescriptions, setPrescriptions] = useState([]);
   const [editingId, setEditingId] = useState(null);
   const [editData, setEditData] = useState({ service: "", location: "", date: "", time: "" });
 
-  // Fetch prescriptions with real-time updates
+
   useEffect(() => {
     const unsubscribe = onSnapshot(collection(db, "appointments"), (snapshot) => {
       setPrescriptions(snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })));
     });
 
-    return () => unsubscribe(); // Cleanup listener on unmount
+    return () => unsubscribe(); 
   }, []);
 
-  // Handle delete
+  
   const handleDelete = async (id) => {
     try {
       await deletePrescription(id);
@@ -27,10 +27,10 @@ const AppointmentPage = () => {
     }
   };
 
-  // Handle edit
+  
   const handleEdit = (prescription) => {
     setEditingId(prescription.id);
-    setEditData({ ...prescription }); // Populate edit form with selected data
+    setEditData({ ...prescription }); 
   };
 
   const handleEditChange = (e) => {
@@ -45,7 +45,7 @@ const AppointmentPage = () => {
       setPrescriptions((prev) =>
         prev.map((item) => (item.id === editingId ? { id: editingId, ...editData } : item))
       );
-      setEditingId(null); // Close edit mode
+      setEditingId(null); 
     } catch (error) {
       console.error("Error updating prescription:", error);
     }
@@ -95,7 +95,7 @@ const AppointmentPage = () => {
         </tbody>
       </table>
 
-      {/* Edit Form */}
+      
       {editingId && (
         <form onSubmit={handleEditSubmit} className="p-4 bg-gray-50 rounded-md mt-4 shadow-md">
           <h2 className="text-xl font-semibold mb-4">Edit Appointment</h2>

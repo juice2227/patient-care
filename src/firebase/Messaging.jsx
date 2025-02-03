@@ -1,8 +1,8 @@
-// src/firebase/Messaging.jsx
+
 import { doc, setDoc, arrayUnion, onSnapshot, getDoc } from "firebase/firestore";
 import { db } from "./Firebase";
 
-// Send a message to a conversation
+
 export const sendMessage = async (conversationId, senderId, message) => {
   if (!conversationId || typeof conversationId !== "string") {
     console.error("Invalid conversationId:", conversationId);
@@ -12,7 +12,7 @@ export const sendMessage = async (conversationId, senderId, message) => {
   try {
     const conversationRef = doc(db, "conversations", conversationId);
 
-    // Add the patient's message
+    
     await setDoc(
       conversationRef,
       {
@@ -27,15 +27,14 @@ export const sendMessage = async (conversationId, senderId, message) => {
 
     console.log("Patient's message sent successfully");
 
-    // Check for an existing appointment
-    const appointmentRef = doc(db, "appointments", conversationId); // Assuming conversationId matches appointmentId
+  
+    const appointmentRef = doc(db, "appointments", conversationId); 
     const appointmentSnap = await getDoc(appointmentRef);
 
     if (appointmentSnap.exists()) {
       const appointmentData = appointmentSnap.data();
 
-      // Send an automated doctor's message if the appointment is confirmed
-      if (appointmentData.status === "pending") {
+            if (appointmentData.status === "pending") {
         await setDoc(
           conversationRef,
           {
@@ -58,7 +57,7 @@ export const sendMessage = async (conversationId, senderId, message) => {
   }
 };
 
-// Listen for real-time messages in a conversation
+
 export const setupPatientDashboard = (appointmentId, setMessages) => {
   if (!appointmentId) {
     console.error("Invalid appointmentId:", appointmentId);
@@ -67,7 +66,7 @@ export const setupPatientDashboard = (appointmentId, setMessages) => {
 
   const conversationRef = doc(db, "conversations", appointmentId);
 
-  // Listen for real-time updates
+  
   return onSnapshot(conversationRef, (docSnapshot) => {
     if (docSnapshot.exists()) {
       const data = docSnapshot.data();

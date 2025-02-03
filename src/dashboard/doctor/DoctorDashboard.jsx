@@ -3,9 +3,9 @@ import Sidebar from "./Sidebar";
 import AppointmentAcceptance from "./AppointmentAcceptance";
 import DoctorPrescriptions from "./DoctorPrescriptions";
 
-import Profile from "./ProfileDoctor";  // Import Profile if it's shared
+import Profile from "./ProfileDoctor"; 
 
-import { Outlet } from "react-router-dom"; // This renders nested routes
+import { Outlet } from "react-router-dom"; 
 
 const DoctorDashboard = () => {
   return (
@@ -23,7 +23,6 @@ const DoctorDashboard = () => {
           <Route index element={<h2>Welcome to your dashboard</h2>} />
         </Routes>
 
-        {/* Renders nested routes */}
         <Outlet />
       </div>
     </div>
