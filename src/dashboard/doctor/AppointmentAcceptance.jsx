@@ -1,4 +1,3 @@
-// eslint-disable-next-line no-unused-vars
 import React, { useEffect, useState } from "react";
 import { db } from "../../firebase/Firebase";
 import { collection, query, where, getDocs, updateDoc, doc, onSnapshot, Timestamp } from "firebase/firestore";
@@ -10,17 +9,18 @@ const AppointmentAcceptance = () => {
 
   useEffect(() => {
     const q = query(collection(db, "appointments"), where("status", "==", "pending"));
-    
-    
+
     const unsubscribe = onSnapshot(q, (querySnapshot) => {
       const appointmentsList = querySnapshot.docs.map((doc) => ({
         id: doc.id,
         ...doc.data(),
       }));
+
+      console.log("Fetched appointments:", appointmentsList); // ✅ Debugging log
       setAppointments(appointmentsList);
     });
 
-    return () => unsubscribe(); 
+    return () => unsubscribe();
   }, []);
 
   const handleResponseChange = (e) => {
@@ -45,6 +45,8 @@ const AppointmentAcceptance = () => {
         },
       });
 
+      console.log(`Appointment ${appointmentId} confirmed by ${doctorName}`); // ✅ Debugging log
+
       setResponseData({ dateTime: "", message: "" });
       setEditingId(null);
     } catch (error) {
@@ -64,7 +66,7 @@ const AppointmentAcceptance = () => {
               <h3 className="text-lg font-semibold text-gray-700">Patient Appointment</h3>
               <p className="text-gray-600"><strong>Service:</strong> {appointment.service}</p>
               <p className="text-gray-600"><strong>Location:</strong> {appointment.location}</p>
-              <p className="text-gray-600"><strong>Requested Date:</strong> {new Date(appointment.requestedDateTime).toLocaleString()}</p>
+              <p className="text-gray-600"><strong>Requested Date:</strong> {appointment.requestedDateTime ? new Date(appointment.requestedDateTime).toLocaleString() : "N/A"}</p> {/* ✅ Fixed requestedDateTime */}
 
               {appointment.status === "pending" && (
                 <div className="mt-4">

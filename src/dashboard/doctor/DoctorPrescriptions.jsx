@@ -1,3 +1,4 @@
+// eslint-disable-next-line no-unused-vars
 import React, { useEffect, useState } from "react";
 import { db } from "../../firebase/Firebase";
 import { collection, query, where, getDocs, addDoc } from "firebase/firestore";
@@ -12,7 +13,10 @@ const DoctorPrescriptions = () => {
       try {
         const q = query(collection(db, "appointments"), where("status", "==", "confirmed"));
         const querySnapshot = await getDocs(q);
-        setConfirmedAppointments(querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })));
+        const appointments = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+        
+        console.log("Confirmed Appointments:", appointments); // Debugging
+        setConfirmedAppointments(appointments);
       } catch (error) {
         console.error("Error fetching confirmed appointments:", error);
       }
@@ -29,11 +33,15 @@ const DoctorPrescriptions = () => {
   const handleAssignPrescription = async () => {
     if (!selectedPatientId) return alert("Please select a patient.");
     try {
-      await addDoc(collection(db, "prescriptions"), {
-        patientId: selectedPatientId,
+      const prescription = {
+        patientId: selectedPatientId, 
         ...prescriptionData,
         dateTime: new Date().toISOString(),
-      });
+      };
+
+      console.log("Saving prescription:", prescription); 
+      await addDoc(collection(db, "prescriptions"), prescription);
+      
       alert("Prescription assigned successfully!");
       setPrescriptionData({ medicine: "", dosage: "", instructions: "" });
     } catch (error) {

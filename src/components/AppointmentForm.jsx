@@ -18,7 +18,11 @@ const AppointmentForm = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await addDoc(collection(db, "appointments"), formData);
+      await addDoc(collection(db, "appointments"), {
+        ...formData,
+        status: "pending", // ✅ Ensure status is set
+        requestedDateTime: new Date().toISOString(), // ✅ Ensure timestamp is stored
+      });
       console.log("New appointment added!");
     } catch (error) {
       console.error("Error adding new appointment:", error);
@@ -77,7 +81,7 @@ const AppointmentForm = () => {
         </div>
       </div>
 
-      <button type="submit" className="bg-green-500 !important text-white px-6 py-2 mt-4 rounded-md hover:bg-green-600">
+      <button type="submit" className="bg-green-500 text-white px-6 py-2 mt-4 rounded-md hover:bg-green-600">
         Submit
       </button>
     </form>
