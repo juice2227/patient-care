@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { db } from "../../firebase/Firebase";
 import { collection, query, where, getDocs, updateDoc, doc } from "firebase/firestore";
-import Prescription from "./Prescription"
+
 
 const DoctorDashboard = () => {
   const [appointments, setAppointments] = useState([]);
@@ -83,7 +83,7 @@ const DoctorDashboard = () => {
           </div>
         ))}
       </div>
-      <Prescription/>
+      
     </div>
   );
 };

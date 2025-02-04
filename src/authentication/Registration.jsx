@@ -3,7 +3,7 @@ import { createUserWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } f
 import { auth, db } from "../firebase/Firebase";
 import { doc, setDoc, getDoc } from "firebase/firestore";
 import { FcGoogle } from "react-icons/fc";
-import { Link } from "react-router-dom";
+import { Link ,useNavigate} from "react-router-dom";
 
 const Registeration = () => {
   const [formData, setFormData] = useState({
@@ -16,7 +16,7 @@ const Registeration = () => {
   });
   const [error, setError] = useState("");
   const [showPassword, setShowPassword] = useState(false); // Toggle state for password visibility
-
+  const navigate = useNavigate();
   
   useEffect(() => {
     setFormData({
@@ -74,7 +74,8 @@ const Registeration = () => {
       });
 
 
-      window.location.href = "/login";  
+      navigate("/login");
+
     } catch (error) {
       setError(error.message);
     }
@@ -103,7 +104,8 @@ const Registeration = () => {
 
       console.log("User signed in with Google:", user);
   
-      window.location.href = "/dashboard"; 
+      navigate("/dashboard");
+
 
     } catch (error) {
       setError(error.message);
@@ -111,7 +113,7 @@ const Registeration = () => {
   };
 
   const togglePasswordVisibility = () => {
-    setShowPassword(!showPassword); 
+    setShowPassword(!showPassword); // Toggle password visibility
   };
 
   return (

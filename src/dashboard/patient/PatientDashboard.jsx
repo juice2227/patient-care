@@ -1,10 +1,12 @@
 import { Routes, Route } from "react-router-dom";
 import Sidebar from "./Sidebar";
 import AppointmentHistory from "./AppointmentHistory";
-import Profile from "./PatientProfile";
-import Messages from "./AppointmentMessages";
-import Prescriptions from "./PrescriptionMessage";
+import PatientProfile from "./PatientProfile";
+import AppointmentMessages from "./AppointmentMessages";
+import PrescriptionMessage from "./PrescriptionMessage";
 import { Outlet } from "react-router-dom"; // Allows nested components
+import Logout from "../../authentication/Logout";
+
 
 const PatientDashboard = () => {
   return (
@@ -15,10 +17,12 @@ const PatientDashboard = () => {
       {/* Main Content */}
       <div className="ml-64 p-4 w-full">
         <Routes>
-          <Route path="profile" element={<Profile />} />
+          
+          <Route path="logout" element={<Logout/>}/>
+          <Route path="profile" element={<PatientProfile />} />
           <Route path="appointments" element={<AppointmentHistory />} />
-          <Route path="prescriptions" element={<Prescriptions />} />
-          <Route path="messages" element={<Messages />} />
+          <Route path="prescriptions" element={<PrescriptionMessage />} />
+          <Route path="messages" element={<AppointmentMessages />} />
           <Route index element={<h2>Welcome to your dashboard</h2>} />
         </Routes>
 

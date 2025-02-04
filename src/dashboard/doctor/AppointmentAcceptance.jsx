@@ -1,9 +1,7 @@
 // eslint-disable-next-line no-unused-vars
 import React, { useEffect, useState } from "react";
 import { db } from "../../firebase/Firebase";
-import { collection, query, where, getDocs, updateDoc, doc } from "firebase/firestore";
-
-import DoctorPrescriptions from "./DoctorPrescriptions.jsx";
+import { collection, query, where, getDocs, updateDoc, doc, onSnapshot, Timestamp } from "firebase/firestore";
 
 const AppointmentAcceptance = () => {
   const [appointments, setAppointments] = useState([]);
@@ -11,17 +9,18 @@ const AppointmentAcceptance = () => {
   const [editingId, setEditingId] = useState(null);
 
   useEffect(() => {
-    const loadAppointments = async () => {
-      const q = query(collection(db, "appointments"), where("status", "==", "pending"));
-      const querySnapshot = await getDocs(q);
+    const q = query(collection(db, "appointments"), where("status", "==", "pending"));
+    
+    
+    const unsubscribe = onSnapshot(q, (querySnapshot) => {
       const appointmentsList = querySnapshot.docs.map((doc) => ({
         id: doc.id,
         ...doc.data(),
       }));
       setAppointments(appointmentsList);
-    };
+    });
 
-    loadAppointments();
+    return () => unsubscribe(); 
   }, []);
 
   const handleResponseChange = (e) => {
@@ -29,24 +28,24 @@ const AppointmentAcceptance = () => {
     setResponseData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleRespond = async (appointmentId) => {
+  const handleRespond = async (appointmentId, doctorName) => {
     try {
+      if (!responseData.dateTime || !responseData.message) {
+        alert("Please fill in all fields before confirming.");
+        return;
+      }
+
       const appointmentRef = doc(db, "appointments", appointmentId);
       await updateDoc(appointmentRef, {
         status: "confirmed",
         doctorResponse: {
-          dateTime: new Date(responseData.dateTime).toISOString(),
           message: responseData.message,
+          timestamp: Timestamp.fromDate(new Date(responseData.dateTime)), 
+          doctorName: doctorName, 
         },
       });
-      setAppointments((prev) =>
-        prev.map((item) =>
-          item.id === appointmentId
-            ? { ...item, status: "confirmed", doctorResponse: responseData }
-            : item
-        )
-      );
-      setResponseData({ dateTime: "", message: "" }); 
+
+      setResponseData({ dateTime: "", message: "" });
       setEditingId(null);
     } catch (error) {
       console.error("Error responding to appointment:", error);
@@ -54,39 +53,49 @@ const AppointmentAcceptance = () => {
   };
 
   return (
-    <div>
-      <h1>Doctor Dashboard</h1>
-      <div className="appointments">
-        {appointments.map((appointment) => (
-          <div key={appointment.id}>
-            <h3>Patient Appointment</h3>
-            <p>Service: {appointment.service}</p>
-            <p>Location: {appointment.location}</p>
-            <p>Date: {new Date(appointment.requestedDateTime).toLocaleString()}</p>
-            {appointment.status === "pending" && (
-              <div>
-                <h4>Respond to Appointment</h4>
-                <input
-                  type="datetime-local"
-                  name="dateTime"
-                  value={responseData.dateTime}
-                  onChange={handleResponseChange}
-                  required
-                />
-                <textarea
-                  name="message"
-                  value={responseData.message}
-                  onChange={handleResponseChange}
-                  placeholder="Leave a message for the patient"
-                ></textarea>
-                <button onClick={() => handleRespond(appointment.id)}>Confirm Appointment</button>
-              </div>
-            )}
-          </div>
-        ))}
+    <div className="max-w-4xl mx-auto p-6 bg-white shadow-lg rounded-lg">
+      <h1 className="text-2xl font-bold mb-6 text-center">Doctor Dashboard</h1>
+      <div className="space-y-6">
+        {appointments.length === 0 ? (
+          <p className="text-center text-gray-500">No pending appointments.</p>
+        ) : (
+          appointments.map((appointment) => (
+            <div key={appointment.id} className="p-4 border rounded-lg shadow-md bg-gray-50">
+              <h3 className="text-lg font-semibold text-gray-700">Patient Appointment</h3>
+              <p className="text-gray-600"><strong>Service:</strong> {appointment.service}</p>
+              <p className="text-gray-600"><strong>Location:</strong> {appointment.location}</p>
+              <p className="text-gray-600"><strong>Requested Date:</strong> {new Date(appointment.requestedDateTime).toLocaleString()}</p>
+
+              {appointment.status === "pending" && (
+                <div className="mt-4">
+                  <h4 className="text-md font-medium text-gray-700">Respond to Appointment</h4>
+                  <input
+                    type="datetime-local"
+                    name="dateTime"
+                    value={responseData.dateTime}
+                    onChange={handleResponseChange}
+                    required
+                    className="mt-2 w-full p-2 border rounded-lg focus:ring focus:ring-yellow-400"
+                  />
+                  <textarea
+                    name="message"
+                    value={responseData.message}
+                    onChange={handleResponseChange}
+                    placeholder="Leave a message for the patient"
+                    className="mt-2 w-full p-2 border rounded-lg focus:ring focus:ring-yellow-400"
+                  ></textarea>
+                  <button
+                    onClick={() => handleRespond(appointment.id, "Dr. Smith")} // Replace with actual doctor name
+                    className="mt-3 bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-4 rounded-lg w-full"
+                  >
+                    Confirm Appointment
+                  </button>
+                </div>
+              )}
+            </div>
+          ))
+        )}
       </div>
-      
-      <DoctorPrescriptions/>
     </div>
   );
 };

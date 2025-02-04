@@ -3,7 +3,7 @@ import Sidebar from "./Sidebar";
 import AppointmentAcceptance from "./AppointmentAcceptance";
 import DoctorPrescriptions from "./DoctorPrescriptions";
 
-import Profile from "./ProfileDoctor"; 
+import ProfileDoctor from "./ProfileDoctor"; 
 
 import { Outlet } from "react-router-dom"; 
 
@@ -16,7 +16,8 @@ const DoctorDashboard = () => {
       {/* Main Content */}
       <div className="ml-64 p-4 w-full">
         <Routes>
-          <Route path="profile" element={<Profile />} />
+          
+          <Route path="profile" element={<ProfileDoctor />} />
           <Route path="appointments" element={<AppointmentAcceptance />} />
           <Route path="prescriptions" element={<DoctorPrescriptions />} />
           

@@ -7,9 +7,7 @@ export default {
   ],
   theme: {
     extend: {},
-    colors:{
-      'custom-green':'#6fb5c1'
-    }
+    
   },
   plugins: [],
 }

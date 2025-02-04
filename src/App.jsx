@@ -1,9 +1,4 @@
-import {
-  BrowserRouter as Router,
-  Routes,
-  Route,
-  Navigate
-} from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { auth, db } from "./firebase/Firebase";
 import { onAuthStateChanged } from "firebase/auth";
@@ -14,7 +9,6 @@ import Login from "./authentication/Login";
 import Register from "./authentication/Registration";
 
 import DoctorDashboard from "./dashboard/doctor/DoctorDashboard";
-
 import PatientDashboard from "./dashboard/patient/PatientDashboard";
 
 export default function App() {
@@ -61,12 +55,17 @@ export default function App() {
     }
   };
 
-  // Show a loading state to prevent incorrect redirections
-  if (loading) return <div>Loading...</div>;
+  // Show splash screen while loading
+  if (loading || showSplash) {
+    return <SplashScreen />;
+  }
 
   return (
     <Router>
       <Routes>
+        {/* Add a route for the root path to redirect to the login */}
+        <Route path="/" element={<Navigate to={currentUser ? (role === "doctor" ? "/doctor-dashboard" : "/patient-dashboard") : "/login"} />} />
+        
         {/* Redirect to login if not authenticated */}
         {!currentUser ? (
           <>
@@ -79,11 +78,11 @@ export default function App() {
             {/* Redirect based on role */}
             {role === "doctor" ? (
               <>
-                <Route path="/doctor-dashboard/" element={<DoctorDashboard />} />
+                <Route path="/doctor-dashboard/*" element={<DoctorDashboard />} />
               </>
             ) : role === "patient" ? (
               <>
-                <Route path="/patient-dashboard/" element={<PatientDashboard />} />
+                <Route path="/patient-dashboard/*" element={<PatientDashboard />} />
               </>
             ) : (
               <Route path="*" element={<Navigate to="/register" />} />
@@ -91,9 +90,6 @@ export default function App() {
           </>
         )}
       </Routes>
-
-      {/* Show splash screen only if needed */}
-      {showSplash && <SplashScreen />}
     </Router>
   );
 }
