@@ -1,13 +1,32 @@
 import React, { useEffect, useState } from "react";
 import { db } from "../../firebase/Firebase";
-import { collection, query, where, getDocs, updateDoc, doc, onSnapshot, Timestamp } from "firebase/firestore";
+import { collection, query, where, getDocs, updateDoc, doc, onSnapshot, Timestamp, getDoc } from "firebase/firestore";
+import { getAuth } from "firebase/auth";
 
 const AppointmentAcceptance = () => {
   const [appointments, setAppointments] = useState([]);
   const [responseData, setResponseData] = useState({ dateTime: "", message: "" });
-  const [editingId, setEditingId] = useState(null);
+  const [doctorName, setDoctorName] = useState(""); // 🔹 Store the doctor's name
+  const auth = getAuth();
 
   useEffect(() => {
+    // 🔹 Fetch logged-in doctor's name
+    const fetchDoctorName = async () => {
+      if (auth.currentUser) {
+        const doctorRef = doc(db, "doctors", auth.currentUser.uid);
+        const doctorSnap = await getDoc(doctorRef);
+
+        if (doctorSnap.exists()) {
+          setDoctorName(doctorSnap.data().name);
+        } else {
+          console.error("Doctor not found in database.");
+        }
+      }
+    };
+
+    fetchDoctorName();
+
+    // 🔹 Fetch pending appointments
     const q = query(collection(db, "appointments"), where("status", "==", "pending"));
 
     const unsubscribe = onSnapshot(q, (querySnapshot) => {
@@ -16,19 +35,18 @@ const AppointmentAcceptance = () => {
         ...doc.data(),
       }));
 
-      console.log("Fetched appointments:", appointmentsList); // ✅ Debugging log
       setAppointments(appointmentsList);
     });
 
     return () => unsubscribe();
-  }, []);
+  }, [auth.currentUser]); // Run effect when the authenticated user changes
 
   const handleResponseChange = (e) => {
     const { name, value } = e.target;
     setResponseData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleRespond = async (appointmentId, doctorName) => {
+  const handleRespond = async (appointmentId) => {
     try {
       if (!responseData.dateTime || !responseData.message) {
         alert("Please fill in all fields before confirming.");
@@ -41,14 +59,13 @@ const AppointmentAcceptance = () => {
         doctorResponse: {
           message: responseData.message,
           timestamp: Timestamp.fromDate(new Date(responseData.dateTime)), 
-          doctorName: doctorName, 
+          doctorName: doctorName, // 🔹 Use fetched doctor name
         },
       });
 
-      console.log(`Appointment ${appointmentId} confirmed by ${doctorName}`); // ✅ Debugging log
+      console.log(`Appointment ${appointmentId} confirmed by ${doctorName}`);
 
       setResponseData({ dateTime: "", message: "" });
-      setEditingId(null);
     } catch (error) {
       console.error("Error responding to appointment:", error);
     }
@@ -66,7 +83,7 @@ const AppointmentAcceptance = () => {
               <h3 className="text-lg font-semibold text-gray-700">Patient Appointment</h3>
               <p className="text-gray-600"><strong>Service:</strong> {appointment.service}</p>
               <p className="text-gray-600"><strong>Location:</strong> {appointment.location}</p>
-              <p className="text-gray-600"><strong>Requested Date:</strong> {appointment.requestedDateTime ? new Date(appointment.requestedDateTime).toLocaleString() : "N/A"}</p> {/* ✅ Fixed requestedDateTime */}
+              <p className="text-gray-600"><strong>Requested Date:</strong> {appointment.requestedDateTime ? new Date(appointment.requestedDateTime).toLocaleString() : "N/A"}</p>
 
               {appointment.status === "pending" && (
                 <div className="mt-4">
@@ -87,7 +104,7 @@ const AppointmentAcceptance = () => {
                     className="mt-2 w-full p-2 border rounded-lg focus:ring focus:ring-yellow-400"
                   ></textarea>
                   <button
-                    onClick={() => handleRespond(appointment.id, "Dr. Smith")} // Replace with actual doctor name
+                    onClick={() => handleRespond(appointment.id)}
                     className="mt-3 bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-4 rounded-lg w-full"
                   >
                     Confirm Appointment

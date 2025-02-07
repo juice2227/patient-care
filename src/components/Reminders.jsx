@@ -1,8 +1,9 @@
+// eslint-disable-next-line no-unused-vars
 import React, { useState, useEffect } from 'react';
 import { MdAlarmAdd, MdAlarmOff } from 'react-icons/md';
 import { format, addMinutes } from 'date-fns';
 
-const Reminder = ({ appointments = [] }) => {
+const Reminders = ({ appointments = [] }) => {
   const [reminders, setReminders] = useState([]);
 
   useEffect(() => {
@@ -66,4 +67,4 @@ const Reminder = ({ appointments = [] }) => {
   );
 };
 
-export default Reminder;
+export default Reminders;

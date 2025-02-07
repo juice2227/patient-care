@@ -6,7 +6,7 @@ import { doc, setDoc, getDoc } from "firebase/firestore";
 import { FcGoogle } from "react-icons/fc";
 import { Link ,useNavigate} from "react-router-dom";
 
-const Registeration = () => {
+const Registration = () => {
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -62,7 +62,8 @@ const Registeration = () => {
         role: role,
       });
 
-      console.log("User registered:", formData);
+      console.log("User registered:", { firstName, lastName, email, role });
+      
       
       
       setFormData({
@@ -227,4 +228,4 @@ const Registeration = () => {
   );
 };
 
-export default Registeration;
+export default Registration;

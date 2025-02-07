@@ -1,25 +1,53 @@
 import { useState, useEffect } from "react";
-import { auth, db } from "../../firebase/Firebase"; 
+import { auth, db } from "../../firebase/Firebase";
 import { doc, getDoc } from "firebase/firestore";
 
 export default function Profile() {
   const [userData, setUserData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     const fetchUserData = async () => {
-      if (auth.currentUser) {
-        const userDoc = await getDoc(doc(db, "users", auth.currentUser.uid));
-        if (userDoc.exists()) {
-          setUserData(userDoc.data());
+      try {
+        if (auth.currentUser) {
+          const userDoc = await getDoc(doc(db, "users", auth.currentUser.uid));
+          if (userDoc.exists()) {
+            setUserData(userDoc.data());
+          } else {
+            setError("User data not found.");
+          }
         }
+      } catch (err) {
+        setError("Failed to fetch profile.");
+      } finally {
+        setLoading(false);
       }
     };
 
-    fetchUserData();
+    // Listen for auth changes to fetch user data
+    const unsubscribe = auth.onAuthStateChanged((user) => {
+      if (user) {
+        fetchUserData();
+      } else {
+        setUserData(null);
+        setLoading(false);
+      }
+    });
+
+    return () => unsubscribe(); // Cleanup listener on unmount
   }, []);
 
-  if (!userData) {
+  if (loading) {
     return <p>Loading profile...</p>;
+  }
+
+  if (error) {
+    return <p className="text-red-500">{error}</p>;
+  }
+
+  if (!userData) {
+    return <p>No profile data available.</p>;
   }
 
   return (

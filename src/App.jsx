@@ -43,7 +43,7 @@ export default function App() {
     return () => unsubscribe();
   }, []);
 
-  // Fetch user role from Firestore
+  
   const fetchUserRole = async (uid) => {
     try {
       const userDoc = await getDoc(doc(db, "users", uid));
@@ -63,10 +63,14 @@ export default function App() {
   return (
     <Router>
       <Routes>
+
+      <Route path="/register" element={<Register />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="*" element={<Navigate to="/login" />} />
         {/* Add a route for the root path to redirect to the login */}
         <Route path="/" element={<Navigate to={currentUser ? (role === "doctor" ? "/doctor-dashboard" : "/patient-dashboard") : "/login"} />} />
         
-        {/* Redirect to login if not authenticated */}
+        
         {!currentUser ? (
           <>
             <Route path="/register" element={<Register />} />
@@ -85,7 +89,7 @@ export default function App() {
                 <Route path="/patient-dashboard/*" element={<PatientDashboard />} />
               </>
             ) : (
-              <Route path="*" element={<Navigate to="/register" />} />
+              <Route path="*" element={<Navigate to="/login" />} />
             )}
           </>
         )}

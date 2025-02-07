@@ -16,7 +16,7 @@ const SplashScreen = () => {
     <div
       className={`${
         loading ? "flex" : "hidden"
-      } fixed inset-0 bg-gray-900 bg-opacity-50 justify-center items-center`}
+      } fixed inset-0  bg-opacity-50 justify-center items-center`}
     >
       <div className="text-center text-white">
         <img

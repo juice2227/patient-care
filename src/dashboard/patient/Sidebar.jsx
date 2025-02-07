@@ -12,6 +12,7 @@ const Sidebar = ({ role }) => {
         <li><Link to={`${dashboardPath}/appointments`} className="flex items-center space-x-2 p-2 hover:bg-teal-600"><FaClipboardList /> <span>Appointments</span></Link></li>
         <li><Link to={`${dashboardPath}/prescriptions`} className="flex items-center space-x-2 p-2 hover:bg-teal-600"><FaFilePrescription /> <span>Prescriptions</span></Link></li>
         <li><Link to={`${dashboardPath}/messages`} className="flex items-center space-x-2 p-2 hover:bg-teal-600"><FaCommentDots /> <span>Messages</span></Link></li>
+        <li><Link to={`${dashboardPath}/reminder`} className="flex items-center space-x-2 p-2 hover:bg-teal-600"><FaCommentDots /> <span>Reminder</span></Link></li>
         <li><Link to = "/logout" className="flex items-center space-x-2 p-2 hover:bg-teal-600"><button>Logout</button></Link></li>
       </ul>
     </div>

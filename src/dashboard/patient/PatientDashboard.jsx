@@ -6,6 +6,7 @@ import AppointmentMessages from "./AppointmentMessages";
 import PrescriptionMessage from "./PrescriptionMessage";
 import { Outlet } from "react-router-dom"; // Allows nested components
 import Logout from "../../authentication/Logout";
+import Reminders from "../../components/Reminders";
 
 
 const PatientDashboard = () => {
@@ -23,6 +24,7 @@ const PatientDashboard = () => {
           <Route path="appointments" element={<AppointmentHistory />} />
           <Route path="prescriptions" element={<PrescriptionMessage />} />
           <Route path="messages" element={<AppointmentMessages />} />
+          <Route path="reminder" element={<Reminders />} />
           <Route index element={<h2>Welcome to your dashboard</h2>} />
         </Routes>
 
