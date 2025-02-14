@@ -3,7 +3,7 @@ import { Navigate, Outlet } from "react-router-dom";
 
 const RouterProtection = ({ role, requiredRole }) => {
   if (!role) {
-    return <div>Loading...</div>; // Prevents access check before role is set
+    return <div>Loading...</div>; 
   }
 
   const hasAccess = requiredRole.includes(role);
