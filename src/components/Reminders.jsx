@@ -7,25 +7,29 @@ const Reminders = ({ appointments = [] }) => {
   const [reminders, setReminders] = useState([]);
 
   useEffect(() => {
-    
     const upcomingAppointments = appointments.filter(
       (app) => new Date(app.date) > new Date()
     );
-    setReminders(
-      upcomingAppointments.map((app) => ({
-        ...app,
-        reminderTime: addMinutes(new Date(app.date), -60),
-        isReminded: false,
-      }))
-    );
-  }, [appointments]);
 
-  const toggleReminder = (appointment) => {
+    const newReminders = upcomingAppointments.map((app) => ({
+      ...app,
+      reminderTime: addMinutes(new Date(app.date), -60),
+      isReminded: false,
+    }));
+
+    // Convert to JSON strings to check if arrays are different
+    const newRemindersString = JSON.stringify(newReminders);
+    const currentRemindersString = JSON.stringify(reminders);
+
+    if (newRemindersString !== currentRemindersString) {
+      setReminders(newReminders);
+    }
+  }, [appointments]); // Do NOT include `reminders` in dependencies
+
+  const toggleReminder = (appointmentId) => {
     setReminders((prev) =>
       prev.map((app) =>
-        app.id === appointment.id
-          ? { ...app, isReminded: !app.isReminded }
-          : app
+        app.id === appointmentId ? { ...app, isReminded: !app.isReminded } : app
       )
     );
   };
@@ -49,7 +53,7 @@ const Reminders = ({ appointments = [] }) => {
               </div>
               <button
                 className="text-gray-500 hover:text-gray-700 focus:outline-none"
-                onClick={() => toggleReminder(appointment)}
+                onClick={() => toggleReminder(appointment.id)}
               >
                 {appointment.isReminded ? (
                   <MdAlarmOff size={20} />

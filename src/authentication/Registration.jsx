@@ -62,8 +62,7 @@ const Registration = () => {
         role: role,
       });
 
-      console.log("User registered:", { firstName, lastName, email, role });
-      
+      console.log("User registered:", formData);
       
       
       setFormData({

@@ -1,11 +1,10 @@
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route , Outlet} from "react-router-dom";
 import Sidebar from "./Sidebar";
 import AppointmentAcceptance from "./AppointmentAcceptance";
 import DoctorPrescriptions from "./DoctorPrescriptions";
 
 import ProfileDoctor from "./ProfileDoctor"; 
 
-import { Outlet } from "react-router-dom"; 
 
 const DoctorDashboard = () => {
   return (

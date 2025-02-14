@@ -6,10 +6,11 @@ import { doc, getDoc } from "firebase/firestore";
 
 import SplashScreen from "./components/SplashScreen";
 import Login from "./authentication/Login";
-import Register from "./authentication/Registration";
-
+import Registration from "./authentication/Registration";
 import DoctorDashboard from "./dashboard/doctor/DoctorDashboard";
 import PatientDashboard from "./dashboard/patient/PatientDashboard";
+import AuthorizedLayout from "./authentication/AuthorizedLayout";
+import RouterProtection from "./authentication/RouterProtection";
 
 export default function App() {
   const [currentUser, setCurrentUser] = useState(null);
@@ -21,13 +22,13 @@ export default function App() {
     const hasSeenSplash = localStorage.getItem("hasSeenSplash");
     if (!hasSeenSplash) {
       setShowSplash(true);
-      localStorage.setItem("hasSeenSplash", "true");
-    } else {
-      setShowSplash(false);
+      setTimeout(() => {
+        setShowSplash(false);
+        localStorage.setItem("hasSeenSplash", "true");
+      }, 3000); // Show splash for 3 seconds
     }
   }, []);
 
-  // Get authenticated user
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
@@ -43,19 +44,20 @@ export default function App() {
     return () => unsubscribe();
   }, []);
 
-  
   const fetchUserRole = async (uid) => {
     try {
       const userDoc = await getDoc(doc(db, "users", uid));
       if (userDoc.exists()) {
         setRole(userDoc.data().role);
+        console.log("Fetched Role:", userDoc.data().role); 
+      } else {
+        console.log("User role not found.");
       }
     } catch (error) {
       console.error("Error fetching role:", error);
     }
   };
 
-  // Show splash screen while loading
   if (loading || showSplash) {
     return <SplashScreen />;
   }
@@ -63,35 +65,24 @@ export default function App() {
   return (
     <Router>
       <Routes>
+    
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Registration />} />
+        <Route path="*" element={<Navigate to="/login" />} />
 
-      <Route path="/register" element={<Register />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="*" element={<Navigate to="/login" />} />
-        {/* Add a route for the root path to redirect to the login */}
-        <Route path="/" element={<Navigate to={currentUser ? (role === "doctor" ? "/doctor-dashboard" : "/patient-dashboard") : "/login"} />} />
         
-        
-        {!currentUser ? (
-          <>
-            <Route path="/register" element={<Register />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="*" element={<Navigate to="/login" />} />
-          </>
-        ) : (
-          <>
-            {/* Redirect based on role */}
-            {role === "doctor" ? (
-              <>
-                <Route path="/doctor-dashboard/*" element={<DoctorDashboard />} />
-              </>
-            ) : role === "patient" ? (
-              <>
-                <Route path="/patient-dashboard/*" element={<PatientDashboard />} />
-              </>
-            ) : (
-              <Route path="*" element={<Navigate to="/login" />} />
-            )}
-          </>
+        {currentUser && (
+          <Route element={<AuthorizedLayout currentUser={currentUser} />}>
+            
+            <Route element={<RouterProtection role={role} requiredRole={["doctor"]} />}>
+              <Route path="/doctor-dashboard/*" element={<DoctorDashboard />} />
+            </Route>
+
+            
+            <Route element={<RouterProtection role={role} requiredRole={["patient"]} />}>
+              <Route path="/patient-dashboard/*" element={<PatientDashboard />} />
+            </Route>
+          </Route>
         )}
       </Routes>
     </Router>

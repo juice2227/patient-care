@@ -25,7 +25,7 @@ export default function Profile() {
   return (
     <div className="max-w-md mx-auto bg-white p-6 rounded-lg shadow-md">
       <h2 className="text-2xl font-bold text-center mb-4">Profile</h2>
-      <p><strong>Name:</strong> {userData.name}</p>
+      <p><strong>Name:</strong> {userData.firstName} {userData.lastName}</p>
       <p><strong>Email:</strong> {userData.email}</p>
       <p><strong>Role:</strong> {userData.role}</p>
     </div>
