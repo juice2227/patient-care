@@ -1,3 +1,4 @@
+// eslint-disable-next-line no-unused-vars
 import React, { useEffect, useState } from "react";
 import { db } from "../../firebase/Firebase";
 import { collection, query, where, getDocs, updateDoc, doc, onSnapshot, Timestamp, getDoc } from "firebase/firestore";
@@ -6,27 +7,38 @@ import { getAuth } from "firebase/auth";
 const AppointmentAcceptance = () => {
   const [appointments, setAppointments] = useState([]);
   const [responseData, setResponseData] = useState({ dateTime: "", message: "" });
-  const [doctorName, setDoctorName] = useState(""); // 🔹 Store the doctor's name
+  const [doctorName, setDoctorName] = useState(""); // Store the doctor's name
   const auth = getAuth();
 
   useEffect(() => {
-    // 🔹 Fetch logged-in doctor's name
+    
     const fetchDoctorName = async () => {
       if (auth.currentUser) {
-        const doctorRef = doc(db, "doctors", auth.currentUser.uid);
+        const doctorRef = doc(db, "users", auth.currentUser.uid);
         const doctorSnap = await getDoc(doctorRef);
 
         if (doctorSnap.exists()) {
-          setDoctorName(doctorSnap.data().name);
+          const userData = doctorSnap.data();
+          
+          if (userData.name) {
+            setDoctorName(userData.name);
+          } else if (userData.firstName && userData.lastName) {
+            setDoctorName(`${userData.firstName} ${userData.lastName}`);
+          } else {
+            
+            setDoctorName(auth.currentUser.displayName || auth.currentUser.email || "Doctor");
+          }
         } else {
           console.error("Doctor not found in database.");
+          
+          setDoctorName(auth.currentUser.displayName || auth.currentUser.email || "Doctor");
         }
       }
     };
 
     fetchDoctorName();
 
-    // 🔹 Fetch pending appointments
+    
     const q = query(collection(db, "appointments"), where("status", "==", "pending"));
 
     const unsubscribe = onSnapshot(q, (querySnapshot) => {
@@ -39,7 +51,7 @@ const AppointmentAcceptance = () => {
     });
 
     return () => unsubscribe();
-  }, [auth.currentUser]); // Run effect when the authenticated user changes
+  }, [auth.currentUser]); 
 
   const handleResponseChange = (e) => {
     const { name, value } = e.target;
@@ -53,21 +65,37 @@ const AppointmentAcceptance = () => {
         return;
       }
 
+      
+      const finalDoctorName = doctorName || auth.currentUser?.displayName || auth.currentUser?.email || "Doctor";
+      
       const appointmentRef = doc(db, "appointments", appointmentId);
-      await updateDoc(appointmentRef, {
+      
+      
+      const updateData = {
         status: "confirmed",
         doctorResponse: {
           message: responseData.message,
-          timestamp: Timestamp.fromDate(new Date(responseData.dateTime)), 
-          doctorName: doctorName, // 🔹 Use fetched doctor name
-        },
-      });
+          timestamp: Timestamp.fromDate(new Date(responseData.dateTime)),
+          doctorName: finalDoctorName,
+        }
+      };
+      
+      
+      if (auth.currentUser?.uid) {
+        updateData.doctorId = auth.currentUser.uid;
+      }
+      
+      
+      updateData.doctorName = finalDoctorName;
+      
+      await updateDoc(appointmentRef, updateData);
 
-      console.log(`Appointment ${appointmentId} confirmed by ${doctorName}`);
+      console.log(`Appointment ${appointmentId} confirmed by ${finalDoctorName}`);
 
       setResponseData({ dateTime: "", message: "" });
     } catch (error) {
       console.error("Error responding to appointment:", error);
+      alert(`Error confirming appointment: ${error.message}`);
     }
   };
 
@@ -80,7 +108,9 @@ const AppointmentAcceptance = () => {
         ) : (
           appointments.map((appointment) => (
             <div key={appointment.id} className="p-4 border rounded-lg shadow-md bg-gray-50">
-              <h3 className="text-lg font-semibold text-gray-700">Patient Appointment</h3>
+              <h3 className="text-lg font-semibold text-gray-700">
+                Patient Name: <span className="text-blue-600">{appointment.patientName || "Unknown"}</span>
+              </h3>
               <p className="text-gray-600"><strong>Service:</strong> {appointment.service}</p>
               <p className="text-gray-600"><strong>Location:</strong> {appointment.location}</p>
               <p className="text-gray-600"><strong>Requested Date:</strong> {appointment.requestedDateTime ? new Date(appointment.requestedDateTime).toLocaleString() : "N/A"}</p>

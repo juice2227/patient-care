@@ -17,14 +17,14 @@ const Reminders = ({ appointments = [] }) => {
       isReminded: false,
     }));
 
-    // Convert to JSON strings to check if arrays are different
+    
     const newRemindersString = JSON.stringify(newReminders);
     const currentRemindersString = JSON.stringify(reminders);
 
     if (newRemindersString !== currentRemindersString) {
       setReminders(newReminders);
     }
-  }, [appointments]); // Do NOT include `reminders` in dependencies
+  }, [appointments]); 
 
   const toggleReminder = (appointmentId) => {
     setReminders((prev) =>

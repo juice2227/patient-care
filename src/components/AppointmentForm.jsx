@@ -1,6 +1,7 @@
-import React, { useState } from "react";
-import { addDoc, collection } from "firebase/firestore";
+import React, { useState, useEffect } from "react";
+import { addDoc, collection, doc, getDoc } from "firebase/firestore";
 import { db } from "../firebase/Firebase";
+import { getAuth } from "firebase/auth";
 
 const AppointmentForm = () => {
   const [formData, setFormData] = useState({
@@ -9,6 +10,26 @@ const AppointmentForm = () => {
     date: "",
     time: "",
   });
+  const [patient, setPatient] = useState(null);
+  const auth = getAuth();
+
+  useEffect(() => {
+    const fetchPatientDetails = async () => {
+      if (auth.currentUser) {
+        const patientRef = doc(db, "users", auth.currentUser.uid);
+        const patientSnap = await getDoc(patientRef);
+        
+        if (patientSnap.exists()) {
+          setPatient({
+            id: auth.currentUser.uid,
+            name: `${patientSnap.data().firstName} ${patientSnap.data().lastName}`,
+          });
+        }
+      }
+    };
+
+    fetchPatientDetails();
+  }, [auth.currentUser]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -17,13 +38,20 @@ const AppointmentForm = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!patient) {
+      alert("Error: Patient details not found.");
+      return;
+    }
+    
     try {
       await addDoc(collection(db, "appointments"), {
         ...formData,
-        status: "pending", // ✅ Ensure status is set
-        requestedDateTime: new Date().toISOString(), // ✅ Ensure timestamp is stored
+        patientId: patient.id,
+        patientName: patient.name, 
+        status: "pending",
+        requestedDateTime: new Date().toISOString(),
       });
-      console.log("New appointment added!");
+      console.log("New appointment added for", patient.name);
     } catch (error) {
       console.error("Error adding new appointment:", error);
     }
@@ -33,7 +61,7 @@ const AppointmentForm = () => {
     <form onSubmit={handleSubmit} className="shadow-lg p-6 rounded-lg bg-white">
       <h2 className="text-2xl font-semibold mb-4">Request New Appointment</h2>
       <hr className="border-t-2 border-gray-300 mb-6" />
-
+      
       <div className="grid grid-cols-2 gap-4 mb-6">
         <div>
           <label className="block text-gray-700">Service:</label>

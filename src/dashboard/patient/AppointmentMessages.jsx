@@ -1,21 +1,66 @@
 // eslint-disable-next-line no-unused-vars
 import React, { useEffect, useState } from "react";
-import { collection, query, where, onSnapshot, deleteDoc, doc } from "firebase/firestore";
-import { db } from "../../firebase/Firebase";
+import { collection, query, where, onSnapshot, deleteDoc, doc, getDoc } from "firebase/firestore";
+import { db, auth } from "../../firebase/Firebase"; 
 
 const AppointmentMessages = () => {
   const [appointments, setAppointments] = useState([]);
   const [selectedMessage, setSelectedMessage] = useState(null);
   const [selectedMessages, setSelectedMessages] = useState([]);
+  const [doctorName, setDoctorName] = useState("");
 
+  
+  useEffect(() => {
+    const fetchDoctorName = async () => {
+      if (auth.currentUser) {
+        console.log("Fetching doctor data for:", auth.currentUser.uid);
+
+        const userRef = doc(db, "users", auth.currentUser.uid);
+        const userSnap = await getDoc(userRef);
+
+        if (userSnap.exists()) {
+          const userData = userSnap.data();
+          console.log("Doctor Data:", userData);
+          setDoctorName(`${userData.firstName} ${userData.lastName}`);
+        } else {
+          console.error("Doctor not found in users collection.");
+        }
+      } else {
+        console.warn("No user logged in.");
+      }
+    };
+
+    fetchDoctorName();
+  }, []);
+
+  
   const fetchConfirmedAppointments = () => {
     const q = query(collection(db, "appointments"), where("status", "==", "confirmed"));
-    
-    return onSnapshot(q, (snapshot) => {
-      const appointmentData = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      }));
+
+    return onSnapshot(q, async (snapshot) => {
+      const appointmentData = await Promise.all(
+        snapshot.docs.map(async (docSnap) => {
+          const appointment = { id: docSnap.id, ...docSnap.data() };
+
+          
+          if (appointment.patientId) {
+            const patientRef = doc(db, "users", appointment.patientId);
+            const patientSnap = await getDoc(patientRef);
+
+            if (patientSnap.exists()) {
+              appointment.patientName = `${patientSnap.data().firstName} ${patientSnap.data().lastName}`;
+            } else {
+              appointment.patientName = "Unknown Patient";
+            }
+          } else {
+            appointment.patientName = "Unknown Patient";
+          }
+
+          return appointment;
+        })
+      );
+
+      console.log("Appointments fetched with patient names:", appointmentData);
       setAppointments(appointmentData);
     });
   };
@@ -25,6 +70,7 @@ const AppointmentMessages = () => {
     return () => unsubscribe();
   }, []);
 
+  //for selectin messages
   const handleCheckAll = () => {
     if (selectedMessages.length === appointments.length) {
       setSelectedMessages([]);
@@ -34,10 +80,12 @@ const AppointmentMessages = () => {
     }
   };
 
+  
   const handleClearAll = () => {
     setSelectedMessages([]);
   };
 
+  
   const handleDeleteAll = async () => {
     try {
       await Promise.all(
@@ -51,6 +99,7 @@ const AppointmentMessages = () => {
     }
   };
 
+  
   const handleRefresh = () => {
     fetchConfirmedAppointments();
   };
@@ -59,7 +108,6 @@ const AppointmentMessages = () => {
     <div className="p-4 bg-gray-100 min-h-screen">
       <h2 className="text-lg font-bold">Inbox</h2>
       <div className="flex">
-        {/* Messages Table */}
         <div className="w-2/3 bg-white shadow-md rounded-lg p-4">
           <div className="flex justify-between mb-4">
             <button onClick={handleDeleteAll} className="bg-red-500 text-white px-3 py-1 rounded">Delete All</button>
@@ -75,6 +123,7 @@ const AppointmentMessages = () => {
               <tr className="bg-gray-200">
                 <th className="border p-2">Select</th>
                 <th className="border p-2">From</th>
+                <th className="border p-2">To</th>
                 <th className="border p-2">Subject</th>
                 <th className="border p-2">Date</th>
                 <th className="border p-2">Time</th>
@@ -100,16 +149,19 @@ const AppointmentMessages = () => {
                       }}
                     />
                   </td>
-                  <td className="border p-2">{appointment.doctorResponse?.doctorName || "Unknown"}</td>
+                  <td className="border p-2">
+                    {appointment.doctorResponse?.doctorName || doctorName || "Unknown"}
+                  </td>
+                  <td className="border p-2">{appointment.patientName || "Unknown"}</td>
                   <td className="border p-2">Appointment Confirmation</td>
                   <td className="border p-2">
-                    {appointment.doctorResponse?.dateTime
-                      ? new Date(appointment.doctorResponse.dateTime).toLocaleDateString()
+                    {appointment.doctorResponse?.timestamp
+                      ? new Date(appointment.doctorResponse.timestamp.toDate()).toLocaleDateString()
                       : "N/A"}
                   </td>
                   <td className="border p-2">
-                    {appointment.doctorResponse?.dateTime
-                      ? new Date(appointment.doctorResponse.dateTime).toLocaleTimeString()
+                    {appointment.doctorResponse?.timestamp
+                      ? new Date(appointment.doctorResponse.timestamp.toDate()).toLocaleTimeString()
                       : "N/A"}
                   </td>
                 </tr>
@@ -118,7 +170,7 @@ const AppointmentMessages = () => {
           </table>
         </div>
 
-        {/* Message Preview */}
+        
         <div className="w-1/3 bg-white shadow-md rounded-lg p-4 ml-4">
           {selectedMessage ? (
             <div>
@@ -129,16 +181,18 @@ const AppointmentMessages = () => {
               >
                 Close ✖
               </button>
-              <p><strong>From:</strong> {selectedMessage.doctorResponse?.doctorName || "Unknown"}</p>
+              <p><strong>From:</strong> {selectedMessage.doctorResponse?.doctorName || doctorName || "Unknown"}</p>
               <p><strong>To:</strong> {selectedMessage.patientName || "Unknown"}</p>
-              <p><strong>Time:</strong> 
-                {selectedMessage.doctorResponse?.dateTime
-                  ? new Date(selectedMessage.doctorResponse.dateTime).toLocaleTimeString()
+              <p><strong>Date/Time:</strong> 
+              
+                {selectedMessage.doctorResponse?.timestamp
+                  ? new Date(selectedMessage.doctorResponse.timestamp.toDate()).toLocaleString()
                   : "N/A"}
               </p>
+              
               <p className="mt-2">{selectedMessage.doctorResponse?.message || "No message provided."}</p>
               <p className="mt-4 text-sm text-gray-500">
-                Regards, <br /> {selectedMessage.doctorResponse?.doctorName || "Doctor"}
+                Regards, <br /> {selectedMessage.doctorResponse?.doctorName || doctorName || "Doctor"}
               </p>
             </div>
           ) : (

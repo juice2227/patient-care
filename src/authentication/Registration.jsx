@@ -16,7 +16,7 @@ const Registration = () => {
     role: "patient", 
   });
   const [error, setError] = useState("");
-  const [showPassword, setShowPassword] = useState(false); // Toggle state for password visibility
+  const [showPassword, setShowPassword] = useState(false); 
   const navigate = useNavigate();
   
   useEffect(() => {

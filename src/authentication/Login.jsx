@@ -4,7 +4,7 @@ import { signInWithEmailAndPassword, sendPasswordResetEmail } from "firebase/aut
 import { auth, db } from "../firebase/Firebase"; 
 import { doc, getDoc } from "firebase/firestore"; 
 import { useNavigate, Link } from "react-router-dom";
-import { EyeIcon, EyeOffIcon } from "lucide-react"; // Eye icons for password toggle
+import { EyeIcon, EyeOffIcon } from "lucide-react";
 
 const Login = () => {
   const navigate = useNavigate();
