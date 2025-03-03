@@ -3,88 +3,152 @@ import { useEffect, useState } from "react";
 import { auth, db } from "./firebase/Firebase";
 import { onAuthStateChanged } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
-
 import SplashScreen from "./components/SplashScreen";
 import Login from "./authentication/Login";
 import Registration from "./authentication/Registration";
 import DoctorDashboard from "./dashboard/doctor/DoctorDashboard";
 import PatientDashboard from "./dashboard/patient/PatientDashboard";
+import AdminPanel from "./dashboard/admin/AdminPanel";
 import AuthorizedLayout from "./authentication/AuthorizedLayout";
-import RouterProtection from "./authentication/RouterProtection";
 
 export default function App() {
   const [currentUser, setCurrentUser] = useState(null);
-  const [role, setRole] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [showSplash, setShowSplash] = useState(false);
+  const [userRole, setUserRole] = useState(null);
+  const [darkMode, setDarkMode] = useState(
+    localStorage.getItem("theme") === "dark"
+  );
+
 
   useEffect(() => {
-    const hasSeenSplash = localStorage.getItem("hasSeenSplash");
-    if (!hasSeenSplash) {
-      setShowSplash(true);
-      setTimeout(() => {
-        setShowSplash(false);
-        localStorage.setItem("hasSeenSplash", "true");
-      }, 3000); // Show splash for 3 seconds
+    if (darkMode) {
+      document.documentElement.classList.add("dark");
+      localStorage.setItem("theme", "dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+      localStorage.setItem("theme", "light");
     }
-  }, []);
+  }, [darkMode]);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
-        setCurrentUser(user);
-        await fetchUserRole(user.uid);
+        try {
+          const userRef = doc(db, "users", user.uid);
+          const userSnap = await getDoc(userRef);
+ 
+          if (userSnap.exists()) {
+            const userData = userSnap.data();
+            setUserRole(userData.role);
+            setCurrentUser({ ...user, role: userData.role });
+          } else {
+            console.error("No user data found in Firestore");
+            setCurrentUser(null);
+            setUserRole(null);
+          }
+        } catch (error) {
+          console.error("Error fetching user role:", error);
+          setCurrentUser(null);
+          setUserRole(null);
+        }
       } else {
         setCurrentUser(null);
-        setRole(null);
+        setUserRole(null);
       }
       setLoading(false);
     });
-
+ 
     return () => unsubscribe();
   }, []);
-
-  const fetchUserRole = async (uid) => {
-    try {
-      const userDoc = await getDoc(doc(db, "users", uid));
-      if (userDoc.exists()) {
-        setRole(userDoc.data().role);
-        console.log("Fetched Role:", userDoc.data().role); 
-      } else {
-        console.log("User role not found.");
-      }
-    } catch (error) {
-      console.error("Error fetching role:", error);
-    }
-  };
-
-  if (loading || showSplash) {
+ 
+  if (loading) {
     return <SplashScreen />;
   }
 
+  // Function to determine redirect based on user role
+  const getRedirectPath = () => {
+    if (userRole === "admin") return "/admin-panel";
+    if (userRole === "doctor") return "/doctor-dashboard";
+    return "/patient-dashboard";
+  };
+
   return (
-    <Router>
+    <div className={darkMode ? "dark" : ""}>
+      <Router>
       <Routes>
-    
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Registration />} />
-        <Route path="*" element={<Navigate to="/login" />} />
+        {/* Public routes */}
+        <Route 
+          path="/login" 
+          element={
+            currentUser ? (
+              <Navigate to={getRedirectPath()} replace />
+            ) : (
+              <Login />
+            )
+          } 
+        />
+        <Route 
+          path="/register" 
+          element={
+            currentUser ? (
+              userRole === "patient" ? (
+                <Navigate to="/patient-dashboard" replace />
+              ) : (
+                <Navigate to="/login" replace />
+              )
+            ) : (
+              <Registration />
+            )
+          } 
+        />
 
-        
-        {currentUser && (
-          <Route element={<AuthorizedLayout currentUser={currentUser} />}>
-            
-            <Route element={<RouterProtection role={role} requiredRole={["doctor"]} />}>
-              <Route path="/doctor-dashboard/*" element={<DoctorDashboard />} />
-            </Route>
+        {/* Protected routes with improved structure */}
+        <Route element={<AuthorizedLayout currentUser={currentUser} />}>
+          <Route
+            path="/admin-panel/*"
+            element={
+              currentUser && userRole === "admin" ? (
+                <AdminPanel />
+              ) : (
+                <Navigate to="/login" replace />
+              )
+            }
+          />
+          <Route
+            path="/doctor-dashboard/*"
+            element={
+              currentUser && userRole === "doctor" ? (
+                <DoctorDashboard />
+              ) : (
+                <Navigate to="/login" replace />
+              )
+            }
+          />
+          <Route
+            path="/patient-dashboard/*"
+            element={
+              currentUser && userRole === "patient" ? (
+                <PatientDashboard darkMode={darkMode} setDarkMode={setDarkMode} />
+              ) : (
+                <Navigate to="/login" replace />
+              )
+            }
+          />
+        </Route>
 
-            
-            <Route element={<RouterProtection role={role} requiredRole={["patient"]} />}>
-              <Route path="/patient-dashboard/*" element={<PatientDashboard />} />
-            </Route>
-          </Route>
-        )}
+        {/* Catch-all route */}
+        <Route 
+          path="*" 
+          element={
+            currentUser ? (
+              <Navigate to={getRedirectPath()} replace />
+            ) : (
+              <Navigate to="/login" replace />
+            )
+          } 
+        />
       </Routes>
     </Router>
+    </div>
   );
 }
